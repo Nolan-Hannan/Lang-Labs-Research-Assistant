@@ -1,0 +1,42 @@
+//This file contains the C++ code that the arduino uses to read Hall sensor data.
+
+double hallSensor = A0; // Hall sensor is connected to the A0 pin
+double hallVal; // Contains the analog value from the hall sensor
+double volt; // Contains the voltage value read by the hall sensor based on analog to digital conversion
+double fieldStrength; // Contains the field strength based on voltage.
+int i = 0; 
+double voltAvg; // Contains the average voltage reading from the hall sensor during calibration
+double sum = 0;
+const int NUM_DATA_POINTS_AVG = 500; // Is the number of readings the system reads 
+                                     // for voltage calibration.
+double MILLIVOLT_PER_VOLT = 1000; 
+
+void setup() {
+  pinMode(hallSensor, INPUT); // Hall Effect Sensor pin INPUT
+  Serial.begin(9600);
+}
+
+void loop() {
+  hallVal = analogRead(hallSensor); 
+  // Uses analog to digital conversion to get voltage reading.
+  volt = ((hallVal/1024.0)*5.0);
+  
+  // Finds the average voltage reading at hall sensor startup.
+  while (i < NUM_DATA_POINTS_AVG) {
+    sum += volt;
+    i += 1;
+    delay(50);
+  }
+
+  // Reads the voltage and field strength every 0.1 second.
+  if (i >= NUM_DATA_POINTS_AVG) {
+    voltAvg = MILLIVOLT_PER_VOLT * sum / NUM_DATA_POINTS_AVG;
+    fieldStrength = ((MILLIVOLT_PER_VOLT * volt) - voltAvg) / 10; 
+    //Serial.print("Voltage(mV): ");
+    //Serial.println(volt, 4);
+    //Serial.print("Field Strength (mT): ");
+    Serial.println(fieldStrength, 4);
+    delay(100);
+  }
+}
+  
